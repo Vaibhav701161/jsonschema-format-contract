@@ -38,6 +38,20 @@ Everything runs locally, deterministically, and can be used in CI.
 
 # Installation
 
+Install globally from npm:
+
+```bash
+npm install -g jsonschema-format-contract
+```
+
+Or run directly with npx:
+
+```bash
+npx jsonschema-format-contract --help
+```
+
+To build from source:
+
 ```bash
 npm install
 npm run build

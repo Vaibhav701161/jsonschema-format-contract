@@ -1,0 +1,15 @@
+src/
+cli/
+scripts/
+benchmarks/
+examples/
+tests/
+node_modules/
+.git/
+coverage/
+*.log
+*.tgz
+eslint.config.js
+vitest.config.ts
+tsconfig*.json
+.gitignore

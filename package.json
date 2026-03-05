@@ -1,17 +1,34 @@
 {
   "name": "jsonschema-format-contract",
-  "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
+  "description": "CLI for analyzing JSON Schema format validation and generating RFC-based format test suites",
   "type": "module",
+  "main": "dist/cli/index.js",
   "bin": {
     "jsonschema-format-contract": "./dist/cli/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "json-schema",
+    "format",
+    "rfc",
+    "test-suite",
+    "cli",
+    "validation"
+  ],
+  "author": "Vaibhav Mittal",
+  "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.cli.json && esbuild cli/index.ts --bundle --platform=node --format=esm --outfile=dist/cli/index.js --external:commander --external:chalk",
     "cli": "node dist/cli/index.js",
     "lint": "eslint .",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "chalk": "^5.6.2",

@@ -82,7 +82,7 @@ function benchmarkSchema(name: string, filePath: string): BenchmarkResult | null
     name,
     file: filePath,
     sizeBytes,
-    nodeCount: model.nodes.size,
+    nodeCount: Object.keys(model.nodes).length,
     formatCount: constraints.length,
     uniqueFormats,
     highRiskCount,
