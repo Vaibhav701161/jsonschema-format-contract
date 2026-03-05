@@ -96,7 +96,8 @@ export function runAnalyzeRfc(format: string, options: AnalyzeRfcOptions): void 
     if (graph) {
       console.log(chalk.bold(`Production Rules (${graph.rules.size}):`));
       for (const name of graph.sortedNames) {
-        const rule = graph.rules.get(name)!;
+        const rule = graph.rules.get(name);
+        if (!rule) continue;
         const typeColor = rule.isTerminal ? chalk.dim : chalk.cyan;
         console.log(`  ${typeColor(rule.name)} = ${rule.definition}`);
         console.log(`    ${chalk.dim(`[${rule.ruleType}] ${rule.rfcSection}`)}`);

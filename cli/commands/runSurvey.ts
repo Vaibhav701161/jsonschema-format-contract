@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import chalk from 'chalk';
 import { getSupportedFormats } from '../../src/rfc';
 import { surveyFormat, surveyAll, surveyToCsv, type AdapterTestFn } from '../../src/survey';
@@ -181,18 +181,17 @@ function colorPercent(pct: number): string {
 function detectSurveyAdapters(): Map<string, AdapterTestFn> {
   const adapters = new Map<string, AdapterTestFn>();
 
-  // Try to detect AJV
-  try {
-
-    execSync('node -e "require(\'ajv\')"', { stdio: 'ignore' });
+  // Try to detect AJV + ajv-formats (both required)
+  const ajvCheck = spawnSync('node', ['-e', "require('ajv'); require('ajv-formats')"], { stdio: 'ignore' });
+  if (ajvCheck.status === 0) {
     adapters.set('ajv', createNodeAdapter('ajv'));
-  } catch { /* not available */ }
+  }
 
   // Try to detect python-jsonschema
-  try {
-    execSync('python3 -c "import jsonschema"', { stdio: 'ignore' });
+  const pyCheck = spawnSync('python3', ['-c', 'import jsonschema'], { stdio: 'ignore' });
+  if (pyCheck.status === 0) {
     adapters.set('python-jsonschema', createPythonAdapter());
-  } catch { /* not available */ }
+  }
 
   return adapters;
 }
@@ -209,14 +208,19 @@ function createNodeAdapter(_adapterName: string): AdapterTestFn {
         const valid = validate(${JSON.stringify(input)});
         console.log(JSON.stringify({ valid }));
       `;
-      const result = execSync(`node -e ${JSON.stringify(script)}`, {
+      const result = spawnSync('node', ['-e', script], {
         encoding: 'utf-8',
         timeout: 5000,
       });
-      const parsed = JSON.parse(result.trim()) as { valid: boolean };
+      if (result.status !== 0) {
+        console.error('Adapter execution failed:');
+        console.error(result.stderr);
+        return { valid: null, error: `execution_error: ${(result.stderr ?? '').trim() || 'unknown'}` };
+      }
+      const parsed = JSON.parse(result.stdout.trim()) as { valid: boolean };
       return { valid: parsed.valid };
     } catch (err) {
-      return { valid: null, error: err instanceof Error ? err.message : String(err) };
+      return { valid: null, error: `execution_error: ${err instanceof Error ? err.message : String(err)}` };
     }
   };
 }
@@ -234,14 +238,22 @@ except jsonschema.ValidationError:
 except Exception as e:
     print(json.dumps({"valid": None, "error": str(e)}))
 `;
-      const result = execSync(`python3 -c ${JSON.stringify(script)}`, {
+      const result = spawnSync('python3', ['-c', script], {
         encoding: 'utf-8',
         timeout: 5000,
       });
-      const parsed = JSON.parse(result.trim()) as { valid: boolean | null; error?: string };
-      return { valid: parsed.valid, error: parsed.error };
+      if (result.status !== 0) {
+        console.error('Adapter execution failed:');
+        console.error(result.stderr);
+        return { valid: null, error: `execution_error: ${(result.stderr ?? '').trim() || 'unknown'}` };
+      }
+      const parsed = JSON.parse(result.stdout.trim()) as { valid: boolean | null; error?: string };
+      if (parsed.error) {
+        return { valid: null, error: `validator_error: ${parsed.error}` };
+      }
+      return { valid: parsed.valid };
     } catch (err) {
-      return { valid: null, error: err instanceof Error ? err.message : String(err) };
+      return { valid: null, error: `execution_error: ${err instanceof Error ? err.message : String(err)}` };
     }
   };
 }

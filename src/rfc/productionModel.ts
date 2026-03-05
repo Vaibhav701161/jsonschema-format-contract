@@ -268,10 +268,9 @@ function topoSort(rules: Map<string, ProductionRule>): string[] {
     if (visited.has(name)) return;
     visited.add(name);
     const rule = rules.get(name);
-    if (rule) {
-      for (const child of rule.children) {
-        visit(child);
-      }
+    if (!rule) return;
+    for (const child of rule.children) {
+      visit(child);
     }
     sorted.push(name);
   }
