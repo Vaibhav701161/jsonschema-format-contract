@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Complex API Config",
+  "type": "object",
+  "$defs": {
+    "Address": {
+      "type": "object",
+      "properties": {
+        "street": { "type": "string" },
+        "city": { "type": "string" },
+        "zip": { "type": "string", "pattern": "^[0-9]{5}(-[0-9]{4})?$" },
+        "country": { "type": "string", "minLength": 2, "maxLength": 2 }
+      },
+      "required": ["street", "city", "country"]
+    },
+    "ContactInfo": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string", "pattern": "^\\+[1-9][0-9]{1,14}$" },
+        "website": { "type": "string", "format": "uri" }
+      },
+      "required": ["email"]
+    },
+    "TimePeriod": {
+      "type": "object",
+      "properties": {
+        "start": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" }
+      },
+      "required": ["start"]
+    },
+    "Permission": {
+      "oneOf": [
+        { "type": "string", "enum": ["read", "write", "admin"] },
+        {
+          "type": "object",
+          "properties": {
+            "resource": { "type": "string" },
+            "actions": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["create", "read", "update", "delete"] },
+              "minItems": 1
+            },
+            "conditions": {
+              "type": "object",
+              "patternProperties": {
+                "^[a-zA-Z_]+$": {
+                  "oneOf": [
+                    { "type": "string" },
+                    { "type": "number" },
+                    { "type": "boolean" }
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["resource", "actions"]
+        }
+      ]
+    }
+  },
+  "properties": {
+    "organization": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "domain": { "type": "string", "format": "hostname" },
+        "address": { "$ref": "#/$defs/Address" },
+        "contact": { "$ref": "#/$defs/ContactInfo" },
+        "founded": { "type": "string", "format": "date" }
+      },
+      "required": ["name", "domain"]
+    },
+    "users": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "username": { "type": "string", "pattern": "^[a-zA-Z0-9_-]{3,30}$" },
+          "contact": { "$ref": "#/$defs/ContactInfo" },
+          "address": { "$ref": "#/$defs/Address" },
+          "permissions": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/Permission" }
+          },
+          "active_period": { "$ref": "#/$defs/TimePeriod" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true
+          }
+        },
+        "required": ["id", "username", "contact"]
+      }
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "theme": {
+          "anyOf": [
+            { "type": "string", "enum": ["light", "dark", "auto"] },
+            {
+              "type": "object",
+              "properties": {
+                "primary": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "secondary": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+              }
+            }
+          ]
+        },
+        "notifications": {
+          "type": "object",
+          "properties": {
+            "email": { "type": "boolean" },
+            "webhook_url": { "type": "string", "format": "uri" },
+            "schedule": { "$ref": "#/$defs/TimePeriod" }
+          }
+        }
+      }
+    }
+  },
+  "required": ["organization", "users"]
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "User API v2",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "email": { "type": "string", "format": "email", "minLength": 5 },
+    "avatar_url": { "type": "string", "format": "uri" },
+    "role": { "type": "string", "enum": ["admin", "user"] },
+    "department": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string" }
+      }
+    }
+  },
+  "required": ["id", "name", "email", "department"]
+}

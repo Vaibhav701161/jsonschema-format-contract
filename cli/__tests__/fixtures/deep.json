@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "level1": {
+      "type": "object",
+      "properties": {
+        "level2": {
+          "type": "object",
+          "properties": {
+            "level3": {
+              "type": "object",
+              "properties": {
+                "level4": {
+                  "type": "object",
+                  "properties": {
+                    "level5": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
